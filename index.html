@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kingdom Quest</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f4f4f4;
+padding:20px;
+text-align:center;
+}
+
+.container{
+background:white;
+max-width:700px;
+margin:auto;
+padding:25px;
+border-radius:12px;
+box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+
+button{
+padding:12px 20px;
+margin-top:15px;
+cursor:pointer;
+}
+
+input{
+padding:10px;
+margin:5px;
+width:200px;
+}
+
+.hidden{
+display:none;
+}
+
+#question{
+font-size:22px;
+margin:20px;
+}
+
+.choice{
+display:block;
+margin:10px auto;
+width:80%;
+padding:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏆 Kingdom Quest</h1>
+
+<div id="startScreen">
+
+<h3>Begin Your Journey</h3>
+
+<input id="name" placeholder="Name"><br>
+<input id="age" type="number" placeholder="Age"><br>
+<input id="grade" type="number" placeholder="Grade"><br>
+
+<button onclick="startGame()">Start Adventure</button>
+
+</div>
+
+<div id="gameScreen" class="hidden">
+
+<h2 id="playerInfo"></h2>
+
+<p>Points: <span id="points">0</span></p>
+
+<p>Level: <span id="level">1</span></p>
+
+<div id="question"></div>
+
+<div id="answers"></div>
+
+</div>
+
+<div id="breakScreen" class="hidden">
+
+<h2>🌿 Mental Health Minute</h2>
+
+<p id="breakText"></p>
+
+<button onclick="continueGame()">Continue</button>
+
+</div>
+
+</div>
+
+<script>
+
+let player={
+name:"",
+age:0,
+grade:0,
+points:0,
+level:1,
+difficulty:1
+};
+
+let questionsAnswered=0;
+
+const mentalHealthBreaks=[
+"Take 3 slow breaths. God cares about your worries. (Philippians 4:6)",
+"Name one thing you are thankful for today.",
+"What is one good thing you did this week?",
+"Jesus often rested and prayed. What helps you recharge?",
+"Think of someone you can encourage today."
+];
+
+const bibleQuestions=[
+
+{
+difficulty:1,
+question:"Who built the ark?",
+answers:["Noah","Moses","David","Paul"],
+correct:0
+},
+
+{
+difficulty:2,
+question:"Who led Israel out of Egypt?",
+answers:["Peter","Moses","Abraham","Luke"],
+correct:1
+},
+
+{
+difficulty:3,
+question:"What is the first book of the Bible?",
+answers:["Exodus","Genesis","Psalms","Matthew"],
+correct:1
+},
+
+{
+difficulty:4,
+question:"Who interpreted Pharaoh's dreams?",
+answers:["Joseph","Samuel","Joshua","John"],
+correct:0
+},
+
+{
+difficulty:5,
+question:"What fruit of the Spirit is listed in Galatians?",
+answers:["Patience","Luck","Power","Popularity"],
+correct:0
+}
+
+];
+
+const schoolQuestions=[
+
+{
+difficulty:1,
+question:"What is 5 + 5?",
+answers:["10","15","20","8"],
+correct:0
+},
+
+{
+difficulty:2,
+question:"What planet do we live on?",
+answers:["Mars","Earth","Venus","Jupiter"],
+correct:1
+},
+
+{
+difficulty:3,
+question:"What is 12 x 4?",
+answers:["48","52","40","36"],
+correct:0
+},
+
+{
+difficulty:4,
+question:"Water freezes at what temperature (Celsius)?",
+answers:["0","100","50","10"],
+correct:0
+},
+
+{
+difficulty:5,
+question:"What is the largest organ in the human body?",
+answers:["Heart","Brain","Skin","Lungs"],
+correct:2
+}
+
+];
+
+function startGame(){
+
+player.name=document.getElementById("name").value;
+player.age=document.getElementById("age").value;
+player.grade=document.getElementById("grade").value;
+
+document.getElementById("startScreen").classList.add("hidden");
+document.getElementById("gameScreen").classList.remove("hidden");
+
+document.getElementById("playerInfo").innerText=
+"Welcome "+player.name+"!";
+
+nextQuestion();
+}
+
+function nextQuestion(){
+
+if(questionsAnswered>0 && questionsAnswered%5===0){
+
+showBreak();
+return;
+}
+
+let pool=Math.random()<0.5 ? bibleQuestions : schoolQuestions;
+
+let available=pool.filter(
+q=>q.difficulty===player.difficulty
+);
+
+if(available.length===0){
+available=pool;
+}
+
+let q=available[Math.floor(Math.random()*available.length)];
+
+window.currentQuestion=q;
+
+document.getElementById("question").innerText=q.question;
+
+let answersDiv=document.getElementById("answers");
+answersDiv.innerHTML="";
+
+q.answers.forEach((answer,index)=>{
+
+let btn=document.createElement("button");
+
+btn.className="choice";
+
+btn.innerText=answer;
+
+btn.onclick=()=>checkAnswer(index);
+
+answersDiv.appendChild(btn);
+
+});
+}
+
+function checkAnswer(choice){
+
+questionsAnswered++;
+
+if(choice===currentQuestion.correct){
+
+player.points+=10;
+
+player.difficulty=Math.min(
+player.difficulty+1,5
+);
+
+alert("Correct!");
+
+}else{
+
+player.difficulty=Math.max(
+player.difficulty-1,1
+);
+
+alert("Try again!");
+}
+
+player.level=Math.floor(player.points/50)+1;
+
+document.getElementById("points").innerText=
+player.points;
+
+document.getElementById("level").innerText=
+player.level;
+
+nextQuestion();
+}
+
+function showBreak(){
+
+document.getElementById("gameScreen")
+.classList.add("hidden");
+
+document.getElementById("breakScreen")
+.classList.remove("hidden");
+
+let random=
+mentalHealthBreaks[
+Math.floor(Math.random()*mentalHealthBreaks.length)
+];
+
+document.getElementById("breakText")
+.innerText=random;
+}
+
+function continueGame(){
+
+document.getElementById("breakScreen")
+.classList.add("hidden");
+
+document.getElementById("gameScreen")
+.classList.remove("hidden");
+
+nextQuestion();
+}
+
+</script>
+
+</body>
+</html>
